@@ -1,134 +1,132 @@
 import Image from "next/image";
 import Link from "next/link";
+import { categories } from '@/data/categories';
+import { products } from '@/data/products';
 
-const featuredProducts = [
-  {
-    id: 1,
-    name: "Oversized Fit Cotton T-shirt",
-    price: 190,
-    discount: 15,
-    image: "/products/tshirt.jpg",
-  },
-  {
-    id: 2,
-    name: "Button-detail Jacket",
-    price: 420,
-    discount: 20,
-    image: "/products/jacket.jpg",
-  },
-  {
-    id: 3,
-    name: "Women Solid Slim Fit Formal Suit",
-    price: 420,
-    discount: 0,
-    image: "/products/suit.jpg",
-  },
-];
+export default function HomePage() {
+  const featuredProducts = products.slice(0, 4); // Get first 4 products as featured
 
-export default function Home() {
   return (
-    <div className="bg-white">
-      {/* Hero section */}
-      <div className="relative">
-        <div className="mx-auto max-w-7xl">
-          <div className="relative z-10 pt-14 lg:w-full lg:max-w-2xl">
-            <div className="relative px-6 py-32 sm:py-40 lg:px-8 lg:py-56 lg:pr-0">
-              <div className="mx-auto max-w-2xl lg:mx-0 lg:max-w-xl">
-                <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-                  Wear clothes that matter
-                </h1>
-                <p className="mt-6 text-lg leading-8 text-gray-600">
-                  Discover the latest trends in fashion and explore our new collection.
-                </p>
-                <div className="mt-10">
-                  <Link
-                    href="/shop"
-                    className="rounded-md bg-black px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-800"
-                  >
-                    Shop Now
-                  </Link>
+    <main>
+      {/* Hero Section */}
+      <section className="relative h-[600px] flex items-center justify-center">
+        <Image
+          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600"
+          alt="Fashion Hero"
+          fill
+          className="object-cover brightness-75"
+          priority
+        />
+        <div className="relative text-center text-white z-10">
+          <h1 className="text-5xl font-bold mb-4">New Season Arrivals</h1>
+          <p className="text-xl mb-8">Discover the latest trends in fashion</p>
+          <Link
+            href="/category/new-arrivals"
+            className="bg-white text-black px-8 py-3 rounded-md hover:bg-gray-100 transition"
+          >
+            Shop Now
+          </Link>
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-16 px-4 max-w-7xl mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-12">Shop by Category</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {categories.map((category) => (
+            <Link
+              key={category.id}
+              href={`/category/${category.slug}`}
+              className="group relative h-64 overflow-hidden rounded-lg"
+            >
+              <Image
+                src={category.image}
+                alt={category.name}
+                fill
+                className="object-cover group-hover:scale-105 transition duration-300"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                <div className="text-center text-white">
+                  <h3 className="text-2xl font-semibold mb-2">{category.name}</h3>
+                  <p className="text-sm opacity-90">{category.description}</p>
                 </div>
               </div>
-            </div>
-          </div>
+            </Link>
+          ))}
         </div>
-        <div className="bg-gray-50 lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
-          <Image
-            src="/hero.jpg"
-            alt="Hero"
-            width={1920}
-            height={1080}
-            className="aspect-[3/2] object-cover lg:aspect-auto lg:h-full lg:w-full"
-          />
-        </div>
-      </div>
+      </section>
 
-      {/* Best Sellers section */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl py-16 sm:py-24 lg:max-w-none lg:py-32">
-          <h2 className="text-3xl font-bold text-gray-900">Best Sellers</h2>
-
-          <div className="mt-6 space-y-12 lg:grid lg:grid-cols-3 lg:gap-x-6 lg:space-y-0">
+      {/* Featured Products Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Featured Products</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {featuredProducts.map((product) => (
-              <div key={product.id} className="group relative">
-                <div className="relative h-80 w-full overflow-hidden rounded-lg bg-white sm:aspect-h-1 sm:aspect-w-2 lg:aspect-h-1 lg:aspect-w-1 group-hover:opacity-75">
+              <Link
+                key={product.id}
+                href={`/product/${product.id}`}
+                className="group"
+              >
+                <div className="relative h-64 mb-4 rounded-lg overflow-hidden">
                   <Image
                     src={product.image}
                     alt={product.name}
-                    width={500}
-                    height={500}
-                    className="h-full w-full object-cover object-center"
+                    fill
+                    className="object-cover group-hover:scale-105 transition duration-300"
                   />
                   {product.discount > 0 && (
-                    <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 text-sm rounded">
-                      -{product.discount}%
+                    <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded">
+                      {product.discount}% OFF
                     </div>
                   )}
                 </div>
-                <h3 className="mt-6 text-base font-semibold text-gray-900">
-                  <Link href={`/product/${product.id}`}>
-                    <span className="absolute inset-0" />
-                    {product.name}
-                  </Link>
-                </h3>
-                <p className="text-sm text-gray-500">${product.price}</p>
-              </div>
+                <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
+                <div className="flex items-center justify-between">
+                  <p className="text-gray-700">
+                    ${product.price.toFixed(2)}
+                    {product.discount > 0 && (
+                      <span className="ml-2 text-sm text-gray-500 line-through">
+                        ${(product.price * (1 + product.discount / 100)).toFixed(2)}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </Link>
             ))}
           </div>
-
-          <div className="mt-12 text-center">
+          <div className="text-center mt-12">
             <Link
-              href="/shop"
-              className="inline-block rounded-md border border-black px-8 py-3 text-base font-medium text-black hover:bg-black hover:text-white"
+              href="/products"
+              className="inline-block bg-black text-white px-8 py-3 rounded-md hover:bg-gray-800 transition"
             >
-              See More Best Sellers
+              View All Products
             </Link>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Exclusive Deal section */}
-      <div className="bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl py-16 sm:py-24 lg:max-w-none lg:py-32">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900">Serrena Exclusive Deal</h2>
-              <p className="mt-4 text-lg text-gray-600">
-                Discover the epitome of style with Serrena Exclusives. Elevate your wardrobe with premium brands,
-                where luxury meets fashion. Immerse yourself in a world of unparalleled elegance.
-              </p>
-              <div className="mt-8">
-                <Link
-                  href="/shop"
-                  className="inline-block rounded-md bg-black px-8 py-3 text-base font-medium text-white hover:bg-gray-800"
-                >
-                  Visit Shop
-                </Link>
-              </div>
-            </div>
-          </div>
+      {/* Newsletter Section */}
+      <section className="py-16 px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
+          <p className="text-gray-600 mb-8">
+            Subscribe to our newsletter to receive updates, news, and exclusive offers
+          </p>
+          <form className="flex gap-4 max-w-md mx-auto">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+            />
+            <button
+              type="submit"
+              className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition"
+            >
+              Subscribe
+            </button>
+          </form>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
