@@ -28,6 +28,19 @@ export interface Product {
   updatedAt: string;
 }
 
+// Cart related types
+export interface CartItem {
+  id: string;
+  product: Product;
+  quantity: number;
+  size?: string;
+  color?: string;
+}
+
+export interface CartState {
+  items: CartItem[];
+}
+
 // Order related types
 export interface OrderItem {
   product: Product;
@@ -60,20 +73,6 @@ export interface Address {
   zipCode: string;
   country: string;
   isDefault?: boolean;
-}
-
-// Cart related types
-export interface CartItem {
-  id: string;
-  product: Product;
-  quantity: number;
-  size: string;
-  color: string;
-}
-
-export interface CartState {
-  items: CartItem[];
-  total: number;
 }
 
 // API Error type
