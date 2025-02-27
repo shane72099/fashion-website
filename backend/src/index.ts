@@ -2,13 +2,27 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import * as fs from 'fs';
+import * as path from 'path';
 import authRoutes from './routes/auth.routes';
 import productRoutes from './routes/product.routes';
 import orderRoutes from './routes/order.routes';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
+// Load environment variables
 dotenv.config();
+
+// Load secrets from Render's secrets path if available
+const SECRETS_PATH = '/etc/secrets';
+if (fs.existsSync(SECRETS_PATH)) {
+  const files = fs.readdirSync(SECRETS_PATH);
+  files.forEach(file => {
+    const filePath = path.join(SECRETS_PATH, file);
+    const value = fs.readFileSync(filePath, 'utf8');
+    process.env[file] = value.trim();
+  });
+}
 
 const app = express();
 
@@ -32,7 +46,9 @@ app.use(cors({
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/fashion-website');
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/fashion-website';
+    console.log('Attempting to connect to MongoDB...');
+    await mongoose.connect(mongoUri);
     console.log('MongoDB Connected Successfully');
   } catch (error) {
     console.error('MongoDB Connection Error:', error);
@@ -67,6 +83,11 @@ process.on('SIGINT', async () => {
   }
 });
 
+// Basic route for testing
+app.get('/', (req, res) => {
+  res.json({ message: 'Fashion Website API' });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -77,7 +98,9 @@ app.get('/health', (req, res) => {
   res.json({ 
     status: 'ok',
     message: 'Server is running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV,
+    mongoConnected: mongoose.connection.readyState === 1
   });
 });
 
@@ -98,7 +121,7 @@ app.use((err: ErrorWithStatus, req: express.Request, res: express.Response, next
 });
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
   console.log(`CORS Origin: ${process.env.CORS_ORIGIN || 'http://localhost:3000'}`);
