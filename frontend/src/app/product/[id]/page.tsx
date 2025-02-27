@@ -2,122 +2,276 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useCart } from '@/context/CartContext';
-import toast from 'react-hot-toast';
-
-// This would normally come from an API call
-const product = {
-  id: '1',
-  name: 'Oversized Fit Cotton T-shirt',
-  price: 190,
-  description: 'Premium cotton t-shirt with an oversized fit for maximum comfort. Features a ribbed crew neck and short sleeves.',
-  image: '/products/tshirt.jpg',
-  sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  colors: ['White', 'Black', 'Gray'],
-  stock: 10
-};
+import { products } from '@/data/products';
+import { useCart } from '@/hooks/useCart';
+import { toast } from 'react-hot-toast';
+import { BsHeart, BsHeartFill } from 'react-icons/bs';
+import { FaShippingFast } from 'react-icons/fa';
+import { TbReplace } from 'react-icons/tb';
+import { MdLocalOffer } from 'react-icons/md';
 
 export default function ProductPage({ params }: { params: { id: string } }) {
+  const product = products.find(p => p.id === params.id);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
-  const { dispatch } = useCart();
+  const [quantity, setQuantity] = useState(1);
+  const [isWishlist, setIsWishlist] = useState(false);
+  const { addToCart } = useCart();
 
-  const addToCart = () => {
-    if (!selectedSize || !selectedColor) {
-      toast.error('Please select size and color');
+  if (!product) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <h1 className="text-2xl font-semibold">Product not found</h1>
+      </div>
+    );
+  }
+
+  const handleAddToCart = () => {
+    if (!selectedSize) {
+      toast.error('Please select a size');
+      return;
+    }
+    if (!selectedColor) {
+      toast.error('Please select a color');
+      return;
+    }
+    if (quantity < 1) {
+      toast.error('Please select a valid quantity');
+      return;
+    }
+    if (quantity > product.stock) {
+      toast.error('Not enough stock available');
       return;
     }
 
-    dispatch({
-      type: 'ADD_ITEM',
-      payload: {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        quantity: 1
-      }
+    addToCart({
+      ...product,
+      selectedSize,
+      selectedColor,
+      quantity,
     });
-
-    toast.success('Added to cart');
+    toast.success('Added to cart!');
   };
 
+  const discountedPrice = product.discount
+    ? product.price * (1 - product.discount / 100)
+    : product.price;
+
   return (
-    <div className="bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-2">
-          {/* Product Image */}
-          <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg">
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Image Gallery */}
+        <div className="space-y-4">
+          <div className="relative aspect-square rounded-lg overflow-hidden">
             <Image
               src={product.image}
               alt={product.name}
-              width={600}
-              height={600}
-              className="h-full w-full object-cover object-center"
+              fill
+              className="object-cover"
             />
+            <button
+              onClick={() => setIsWishlist(!isWishlist)}
+              className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:scale-110 transition"
+            >
+              {isWishlist ? (
+                <BsHeartFill className="text-red-500 w-6 h-6" />
+              ) : (
+                <BsHeart className="w-6 h-6" />
+              )}
+            </button>
+          </div>
+          <div className="grid grid-cols-4 gap-4">
+            {[product.image, ...Array(3)].map((img, i) => (
+              <div
+                key={i}
+                className="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition"
+              >
+                <Image
+                  src={img || product.image}
+                  alt={`${product.name} view ${i + 1}`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Product Info */}
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+            <p className="text-gray-600">{product.description}</p>
           </div>
 
-          {/* Product Details */}
-          <div className="flex flex-col">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">{product.name}</h1>
-            <p className="mt-4 text-xl text-gray-900">${product.price}</p>
-            
-            <div className="mt-4">
-              <p className="text-base text-gray-700">{product.description}</p>
+          <div className="space-y-2">
+            <div className="flex items-baseline gap-4">
+              <span className="text-3xl font-bold">
+                ${discountedPrice.toFixed(2)}
+              </span>
+              {product.discount > 0 && (
+                <>
+                  <span className="text-xl text-gray-500 line-through">
+                    ${product.price.toFixed(2)}
+                  </span>
+                  <span className="text-red-500 font-semibold">
+                    {product.discount}% OFF
+                  </span>
+                </>
+              )}
             </div>
+            {product.stock < 5 && product.stock > 0 && (
+              <p className="text-yellow-600">
+                Only {product.stock} items left in stock!
+              </p>
+            )}
+          </div>
 
-            {/* Size Selector */}
-            <div className="mt-8">
-              <h3 className="text-sm font-medium text-gray-900">Size</h3>
-              <div className="mt-2 grid grid-cols-5 gap-2">
-                {product.sizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`flex items-center justify-center rounded-md border py-2 text-sm font-medium ${
-                      selectedSize === size
-                        ? 'border-black bg-black text-white'
-                        : 'border-gray-300 text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+          {/* Size Selector */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Select Size</h3>
+            <div className="flex flex-wrap gap-3">
+              {product.sizes.map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  className={`px-4 py-2 rounded-md border ${
+                    selectedSize === size
+                      ? 'border-black bg-black text-white'
+                      : 'border-gray-300 hover:border-black'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color Selector */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Select Color</h3>
+            <div className="flex flex-wrap gap-3">
+              {product.colors.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => setSelectedColor(color)}
+                  className={`w-10 h-10 rounded-full border-2 ${
+                    selectedColor === color
+                      ? 'border-black ring-2 ring-black ring-offset-2'
+                      : 'border-gray-300'
+                  }`}
+                  style={{ backgroundColor: color.toLowerCase() }}
+                  title={color}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Quantity Selector */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Quantity</h3>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:border-black"
+              >
+                -
+              </button>
+              <span className="text-xl font-semibold">{quantity}</span>
+              <button
+                onClick={() =>
+                  setQuantity(Math.min(product.stock, quantity + 1))
+                }
+                className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:border-black"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* Add to Cart Button */}
+          <button
+            onClick={handleAddToCart}
+            disabled={product.stock === 0}
+            className={`w-full py-4 rounded-md text-white font-semibold text-lg ${
+              product.stock === 0
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-black hover:bg-gray-800'
+            }`}
+          >
+            {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+          </button>
+
+          {/* Product Features */}
+          <div className="border-t pt-6 space-y-4">
+            <div className="flex items-center gap-4">
+              <FaShippingFast className="w-6 h-6" />
+              <div>
+                <h4 className="font-semibold">Free Shipping</h4>
+                <p className="text-sm text-gray-600">
+                  On orders over $50
+                </p>
               </div>
             </div>
-
-            {/* Color Selector */}
-            <div className="mt-8">
-              <h3 className="text-sm font-medium text-gray-900">Color</h3>
-              <div className="mt-2 grid grid-cols-3 gap-2">
-                {product.colors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`flex items-center justify-center rounded-md border py-2 text-sm font-medium ${
-                      selectedColor === color
-                        ? 'border-black bg-black text-white'
-                        : 'border-gray-300 text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    {color}
-                  </button>
-                ))}
+            <div className="flex items-center gap-4">
+              <TbReplace className="w-6 h-6" />
+              <div>
+                <h4 className="font-semibold">Easy Returns</h4>
+                <p className="text-sm text-gray-600">
+                  30-day return policy
+                </p>
               </div>
             </div>
+            <div className="flex items-center gap-4">
+              <MdLocalOffer className="w-6 h-6" />
+              <div>
+                <h4 className="font-semibold">Special Offer</h4>
+                <p className="text-sm text-gray-600">
+                  Get 10% off your first order
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Add to Cart Button */}
-            <button
-              onClick={addToCart}
-              className="mt-8 flex w-full items-center justify-center rounded-md border border-transparent bg-black px-8 py-3 text-base font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
-            >
-              Add to Cart
-            </button>
+      {/* Product Details Tabs */}
+      <div className="mt-16">
+        <div className="border-b">
+          <div className="max-w-7xl mx-auto">
+            <nav className="-mb-px flex space-x-8">
+              <a
+                href="#"
+                className="border-black text-black border-b-2 py-4 px-1 text-sm font-medium"
+              >
+                Description
+              </a>
+              <a
+                href="#"
+                className="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 py-4 px-1 text-sm font-medium"
+              >
+                Reviews
+              </a>
+              <a
+                href="#"
+                className="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 py-4 px-1 text-sm font-medium"
+              >
+                Shipping
+              </a>
+            </nav>
+          </div>
+        </div>
 
-            {/* Stock Status */}
-            <p className="mt-4 text-sm text-gray-500">
-              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-            </p>
+        <div className="py-8">
+          <div className="prose max-w-none">
+            <p>{product.description}</p>
+            <h3>Product Features</h3>
+            <ul>
+              <li>High-quality materials</li>
+              <li>Comfortable fit</li>
+              <li>Durable construction</li>
+              <li>Easy care instructions</li>
+            </ul>
           </div>
         </div>
       </div>

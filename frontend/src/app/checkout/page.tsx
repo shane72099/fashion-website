@@ -1,272 +1,295 @@
 'use client';
 
 import { useState } from 'react';
-import { useCart } from '@/context/CartContext';
-import Image from 'next/image';
+import { useCart } from '@/hooks/useCart';
 import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
+
+interface CheckoutForm {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  cardNumber: string;
+  cardExpiry: string;
+  cardCvc: string;
+}
+
+const initialFormState: CheckoutForm = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  address: '',
+  city: '',
+  state: '',
+  zipCode: '',
+  cardNumber: '',
+  cardExpiry: '',
+  cardCvc: '',
+};
 
 export default function CheckoutPage() {
-  const router = useRouter();
-  const { state, dispatch } = useCart();
+  const [form, setForm] = useState<CheckoutForm>(initialFormState);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    name: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-  });
+  const { cart } = useCart();
+  const router = useRouter();
+
+  const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  const shipping = subtotal > 50 ? 0 : 10;
+  const tax = subtotal * 0.1; // 10% tax
+  const total = subtotal + shipping + tax;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
+    // Simulate API call
     try {
-      // Here you would normally:
-      // 1. Create a payment intent with Stripe
-      // 2. Process the payment
-      // 3. Create the order in your database
-      
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulating API call
-      
-      dispatch({ type: 'CLEAR_CART' });
+      await new Promise(resolve => setTimeout(resolve, 2000));
       toast.success('Order placed successfully!');
       router.push('/order-confirmation');
     } catch (error) {
-      toast.error('Error processing payment. Please try again.');
+      toast.error('Failed to process payment. Please try again.');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  if (state.items.length === 0) {
+  if (cart.length === 0) {
     router.push('/cart');
     return null;
   }
 
   return (
-    <div className="bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-5">
-          {/* Order Summary */}
-          <div className="lg:col-span-2">
-            <h2 className="text-lg font-medium text-gray-900">Order Summary</h2>
-            <div className="mt-4 rounded-lg border border-gray-200 bg-white shadow-sm">
-              <ul role="list" className="divide-y divide-gray-200">
-                {state.items.map((item) => (
-                  <li key={item.id} className="flex px-4 py-6 sm:px-6">
-                    <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        width={96}
-                        height={96}
-                        className="h-full w-full object-cover object-center"
-                      />
-                    </div>
-                    <div className="ml-6 flex flex-1 flex-col">
-                      <div className="flex">
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-sm">{item.name}</h4>
-                          <p className="mt-1 text-sm text-gray-500">Quantity: {item.quantity}</p>
-                        </div>
-                        <div className="ml-4 flow-root flex-shrink-0">
-                          <p className="text-sm font-medium text-gray-900">${item.price * item.quantity}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <dl className="space-y-6 border-t border-gray-200 px-4 py-6 sm:px-6">
-                <div className="flex items-center justify-between">
-                  <dt className="text-sm">Subtotal</dt>
-                  <dd className="text-sm font-medium text-gray-900">${state.total}</dd>
-                </div>
-                <div className="flex items-center justify-between">
-                  <dt className="text-sm">Shipping</dt>
-                  <dd className="text-sm font-medium text-gray-900">$10.00</dd>
-                </div>
-                <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-                  <dt className="text-base font-medium">Total</dt>
-                  <dd className="text-base font-medium text-gray-900">${state.total + 10}</dd>
-                </div>
-              </dl>
-            </div>
-          </div>
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
-          {/* Checkout Form */}
-          <div className="lg:col-span-3">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <h2 className="text-lg font-medium text-gray-900">Contact Information</h2>
-                <div className="mt-4">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Checkout Form */}
+        <div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={form.firstName}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={form.lastName}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-1">
                     Email
                   </label>
                   <input
                     type="email"
-                    id="email"
                     name="email"
-                    value={formData.email}
+                    value={form.email}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-1">
+                    Phone
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-1">
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={form.address}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={form.city}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    State
+                  </label>
+                  <input
+                    type="text"
+                    name="state"
+                    value={form.state}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    ZIP Code
+                  </label>
+                  <input
+                    type="text"
+                    name="zipCode"
+                    value={form.zipCode}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
               </div>
+            </div>
 
-              <div>
-                <h2 className="text-lg font-medium text-gray-900">Shipping Information</h2>
-                <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
-                  <div className="sm:col-span-2">
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                      Address
-                    </label>
-                    <input
-                      type="text"
-                      id="address"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="state" className="block text-sm font-medium text-gray-700">
-                      State
-                    </label>
-                    <input
-                      type="text"
-                      id="state"
-                      name="state"
-                      value={formData.state}
-                      onChange={handleInputChange}
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">
-                      ZIP Code
-                    </label>
-                    <input
-                      type="text"
-                      id="zipCode"
-                      name="zipCode"
-                      value={formData.zipCode}
-                      onChange={handleInputChange}
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                    />
-                  </div>
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold mb-4">Payment Information</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Card Number
+                  </label>
+                  <input
+                    type="text"
+                    name="cardNumber"
+                    value={form.cardNumber}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="1234 5678 9012 3456"
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
                 </div>
-              </div>
-
-              <div>
-                <h2 className="text-lg font-medium text-gray-900">Payment Information</h2>
-                <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
-                  <div className="sm:col-span-2">
-                    <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700">
-                      Card Number
-                    </label>
-                    <input
-                      type="text"
-                      id="cardNumber"
-                      name="cardNumber"
-                      value={formData.cardNumber}
-                      onChange={handleInputChange}
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
-                    />
-                  </div>
-
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium mb-1">
                       Expiry Date
                     </label>
                     <input
                       type="text"
-                      id="expiryDate"
-                      name="expiryDate"
-                      placeholder="MM/YY"
-                      value={formData.expiryDate}
+                      name="cardExpiry"
+                      value={form.cardExpiry}
                       onChange={handleInputChange}
                       required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                      placeholder="MM/YY"
+                      className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                     />
                   </div>
-
                   <div>
-                    <label htmlFor="cvv" className="block text-sm font-medium text-gray-700">
-                      CVV
+                    <label className="block text-sm font-medium mb-1">
+                      CVC
                     </label>
                     <input
                       type="text"
-                      id="cvv"
-                      name="cvv"
-                      value={formData.cvv}
+                      name="cardCvc"
+                      value={form.cardCvc}
                       onChange={handleInputChange}
                       required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                      placeholder="123"
+                      className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                     />
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div>
-                <button
-                  type="submit"
-                  disabled={isProcessing}
-                  className="w-full rounded-md border border-transparent bg-black px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
-                >
-                  {isProcessing ? 'Processing...' : 'Place Order'}
-                </button>
+            <button
+              type="submit"
+              disabled={isProcessing}
+              className="w-full py-4 bg-black text-white rounded-md hover:bg-gray-800 transition disabled:bg-gray-400"
+            >
+              {isProcessing ? 'Processing...' : `Pay $${total.toFixed(2)}`}
+            </button>
+          </form>
+        </div>
+
+        {/* Order Summary */}
+        <div className="lg:pl-8">
+          <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
+            <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
+            <div className="space-y-4 mb-6">
+              {cart.map((item) => (
+                <div key={item.id} className="flex gap-4">
+                  <div className="w-20 h-20 bg-gray-100 rounded-md"></div>
+                  <div className="flex-grow">
+                    <h3 className="font-semibold">{item.name}</h3>
+                    <p className="text-sm text-gray-500">
+                      Size: {item.selectedSize}, Color: {item.selectedColor}
+                    </p>
+                    <div className="flex justify-between mt-1">
+                      <p className="text-sm">Qty: {item.quantity}</p>
+                      <p className="font-semibold">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2 pt-4 border-t">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
               </div>
-            </form>
+              <div className="flex justify-between">
+                <span>Shipping</span>
+                <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Tax</span>
+                <span>${tax.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-lg font-semibold pt-2 border-t">
+                <span>Total</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -1,116 +1,176 @@
-import Link from 'next/link'
+'use client';
 
-const navigation = {
-  categories: [
-    { name: 'Men', href: '/category/men' },
-    { name: 'Women', href: '/category/women' },
-    { name: 'Kids', href: '/category/kids' },
+import { useState } from 'react';
+import Link from 'next/link';
+import { toast } from 'react-hot-toast';
+import { FaFacebook, FaTwitter, FaInstagram, FaPinterest } from 'react-icons/fa';
+
+const footerLinks = {
+  shop: [
+    { name: 'New Arrivals', href: '/category/new-arrivals' },
+    { name: 'Best Sellers', href: '/category/best-sellers' },
+    { name: 'Sale', href: '/category/sale' },
+    { name: 'Gift Cards', href: '/gift-cards' },
   ],
-  pages: [
-    { name: 'Home', href: '/' },
-    { name: 'Shop', href: '/shop' },
-    { name: 'About', href: '/about' },
-    { name: 'Contact', href: '/contact' },
+  help: [
+    { name: 'Shipping', href: '/shipping' },
+    { name: 'Returns', href: '/returns' },
+    { name: 'Size Guide', href: '/size-guide' },
+    { name: 'Contact Us', href: '/contact' },
   ],
-}
+  about: [
+    { name: 'Our Story', href: '/about' },
+    { name: 'Careers', href: '/careers' },
+    { name: 'Press', href: '/press' },
+    { name: 'Blog', href: '/blog' },
+  ],
+  legal: [
+    { name: 'Terms of Service', href: '/terms' },
+    { name: 'Privacy Policy', href: '/privacy' },
+    { name: 'Cookie Policy', href: '/cookies' },
+  ],
+};
+
+const socialLinks = [
+  { name: 'Facebook', icon: FaFacebook, href: 'https://facebook.com' },
+  { name: 'Twitter', icon: FaTwitter, href: 'https://twitter.com' },
+  { name: 'Instagram', icon: FaInstagram, href: 'https://instagram.com' },
+  { name: 'Pinterest', icon: FaPinterest, href: 'https://pinterest.com' },
+];
 
 export default function Footer() {
+  const [email, setEmail] = useState('');
+
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Implement newsletter signup
+    toast.success('Thank you for subscribing!');
+    setEmail('');
+  };
+
   return (
-    <footer className="bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="py-20">
-          {/* Newsletter */}
-          <div className="text-center">
-            <h3 className="text-2xl font-bold tracking-tight text-gray-900">
-              Sign up to our newsletter & get 20% off
-            </h3>
-            <div className="mt-8">
-              <form className="sm:mx-auto sm:max-w-xl">
-                <div className="sm:flex">
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    placeholder="Enter your email"
-                    className="w-full rounded-md border-gray-300 px-5 py-3 placeholder-gray-500 focus:border-gray-500 focus:ring-gray-500 sm:max-w-xs"
-                  />
-                  <div className="mt-3 sm:ml-3 sm:mt-0">
-                    <button
-                      type="submit"
-                      className="block w-full rounded-md bg-black px-5 py-3 text-base font-medium text-white hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 sm:px-10"
-                    >
-                      SIGN UP FOR FREE
-                    </button>
-                  </div>
-                </div>
-              </form>
+    <footer className="bg-gray-900 text-white">
+      {/* Newsletter Section */}
+      <div className="border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h3 className="text-2xl font-bold mb-2">
+                Subscribe to our newsletter
+              </h3>
+              <p className="text-gray-400">
+                Get 10% off your first order and stay updated with the latest
+                trends and exclusive offers.
+              </p>
             </div>
+            <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="flex-grow px-4 py-2 rounded-md bg-gray-800 border border-gray-700 focus:outline-none focus:border-white"
+              />
+              <button
+                type="submit"
+                className="px-6 py-2 bg-white text-black rounded-md hover:bg-gray-200 transition"
+              >
+                Subscribe
+              </button>
+            </form>
           </div>
+        </div>
+      </div>
 
-          {/* Footer navigation */}
-          <div className="mt-20 border-t border-gray-200 pt-12">
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {/* Brand */}
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900">SeRrena</h3>
-                <p className="mt-6 text-sm text-gray-500">Your trusted fashion companion</p>
-              </div>
+      {/* Main Footer Content */}
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Shop</h4>
+            <ul className="space-y-2">
+              {footerLinks.shop.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="text-gray-400 hover:text-white transition"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Help</h4>
+            <ul className="space-y-2">
+              {footerLinks.help.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="text-gray-400 hover:text-white transition"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-lg font-semibold mb-4">About</h4>
+            <ul className="space-y-2">
+              {footerLinks.about.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="text-gray-400 hover:text-white transition"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Legal</h4>
+            <ul className="space-y-2">
+              {footerLinks.legal.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="text-gray-400 hover:text-white transition"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
 
-              {/* Navigation */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-900">Navigation</h3>
-                <ul role="list" className="mt-6 space-y-6">
-                  {navigation.pages.map((item) => (
-                    <li key={item.name} className="text-sm">
-                      <Link href={item.href} className="text-gray-500 hover:text-gray-600">
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Categories */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-900">Categories</h3>
-                <ul role="list" className="mt-6 space-y-6">
-                  {navigation.categories.map((item) => (
-                    <li key={item.name} className="text-sm">
-                      <Link href={item.href} className="text-gray-500 hover:text-gray-600">
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Contact */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-900">Contact</h3>
-                <ul role="list" className="mt-6 space-y-6">
-                  <li className="text-sm">
-                    <a href="tel:+1234567890" className="text-gray-500 hover:text-gray-600">
-                      +1 (234) 567-890
-                    </a>
-                  </li>
-                  <li className="text-sm">
-                    <a href="mailto:info@serrena.com" className="text-gray-500 hover:text-gray-600">
-                      info@serrena.com
-                    </a>
-                  </li>
-                </ul>
-              </div>
+        {/* Social Links and Copyright */}
+        <div className="mt-12 pt-8 border-t border-gray-800">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-6">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition"
+                >
+                  <social.icon className="h-6 w-6" />
+                  <span className="sr-only">{social.name}</span>
+                </a>
+              ))}
             </div>
-          </div>
-
-          {/* Copyright */}
-          <div className="mt-12 border-t border-gray-200 pt-8">
-            <p className="text-center text-sm text-gray-500">
-              &copy; {new Date().getFullYear()} Serrena. All rights reserved.
-            </p>
+            <div className="text-gray-400 text-sm">
+              © {new Date().getFullYear()} FASHION. All rights reserved.
+            </div>
           </div>
         </div>
       </div>
     </footer>
-  )
+  );
 } 
