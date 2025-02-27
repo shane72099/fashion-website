@@ -11,7 +11,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative h-[600px] flex items-center justify-center">
         <Image
-          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600"
+          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80"
           alt="Fashion Hero"
           fill
           className="object-cover brightness-75"
