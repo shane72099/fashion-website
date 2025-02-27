@@ -3,6 +3,8 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
+import productRoutes from './routes/product.routes';
+import orderRoutes from './routes/order.routes';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
@@ -28,9 +30,17 @@ app.use(cors({
 }));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI!)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/fashion-website');
+    console.log('MongoDB Connected Successfully');
+  } catch (error) {
+    console.error('MongoDB Connection Error:', error);
+    process.exit(1);
+  }
+};
+
+connectDB();
 
 // Add MongoDB connection error handling
 mongoose.connection.on('error', (err) => {
@@ -59,10 +69,16 @@ process.on('SIGINT', async () => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({ 
+    status: 'ok',
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Global error handling middleware
@@ -83,5 +99,7 @@ app.use((err: ErrorWithStatus, req: express.Request, res: express.Response, next
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log(`CORS Origin: ${process.env.CORS_ORIGIN || 'http://localhost:3000'}`);
 }); 

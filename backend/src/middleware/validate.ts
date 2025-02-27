@@ -12,7 +12,7 @@ export const validate = (validations: ValidationChain[]) => {
 
     res.status(400).json({
       errors: errors.array().map(err => ({
-        field: err.path,
+        field: err.type === 'field' ? err.path : '',
         message: err.msg
       }))
     });
