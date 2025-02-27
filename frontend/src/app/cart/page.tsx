@@ -1,18 +1,22 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useCart } from '@/hooks/useCart';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaTrash } from 'react-icons/fa';
 
 export default function CartPage() {
+  const router = useRouter();
   const { cart, updateQuantity, removeFromCart } = useCart();
   const [promoCode, setPromoCode] = useState('');
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
 
-  const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
   const shipping = subtotal > 50 ? 0 : 10;
   const discount = 0; // This would be calculated based on applied promo code
   const total = subtotal + shipping - discount;
@@ -40,8 +44,8 @@ export default function CartPage() {
   };
 
   const handleCheckout = () => {
-    // Implement checkout logic
     toast.success('Redirecting to checkout...');
+    router.push('/checkout');
   };
 
   if (cart.length === 0) {
@@ -82,8 +86,8 @@ export default function CartPage() {
             >
               <div className="relative w-24 h-24 flex-shrink-0">
                 <Image
-                  src={item.image}
-                  alt={item.name}
+                  src={item.product.image}
+                  alt={item.product.name}
                   fill
                   className="object-cover rounded-md"
                 />
@@ -92,10 +96,10 @@ export default function CartPage() {
               <div className="flex-grow">
                 <div className="flex justify-between mb-2">
                   <Link
-                    href={`/product/${item.id}`}
+                    href={`/product/${item.product.id}`}
                     className="text-lg font-semibold hover:text-gray-600"
                   >
-                    {item.name}
+                    {item.product.name}
                   </Link>
                   <button
                     onClick={() => handleRemoveItem(item.id)}
@@ -132,11 +136,11 @@ export default function CartPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-semibold">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      ${(item.product.price * item.quantity).toFixed(2)}
                     </p>
-                    {item.discount > 0 && (
+                    {item.product.discount > 0 && (
                       <p className="text-sm text-red-500">
-                        Save {item.discount}%
+                        Save {item.product.discount}%
                       </p>
                     )}
                   </div>

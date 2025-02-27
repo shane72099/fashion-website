@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '@/hooks/useCart';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import Link from 'next/link';
 
 interface CheckoutForm {
   firstName: string;
@@ -36,10 +37,36 @@ const initialFormState: CheckoutForm = {
 export default function CheckoutPage() {
   const [form, setForm] = useState<CheckoutForm>(initialFormState);
   const [isProcessing, setIsProcessing] = useState(false);
-  const { cart } = useCart();
+  const [mounted, setMounted] = useState(false);
+  const { cart, clearCart } = useCart();
   const router = useRouter();
 
-  const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  if (cart.length === 0) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <h2 className="text-2xl font-semibold mb-4">Your cart is empty</h2>
+        <p className="text-gray-600 mb-8">
+          Please add some items to your cart before proceeding to checkout.
+        </p>
+        <Link
+          href="/"
+          className="bg-black text-white px-8 py-3 rounded-md hover:bg-gray-800 transition"
+        >
+          Continue Shopping
+        </Link>
+      </div>
+    );
+  }
+
+  const subtotal = cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
   const shipping = subtotal > 50 ? 0 : 10;
   const tax = subtotal * 0.1; // 10% tax
   const total = subtotal + shipping + tax;
@@ -53,9 +80,10 @@ export default function CheckoutPage() {
     e.preventDefault();
     setIsProcessing(true);
 
-    // Simulate API call
     try {
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
+      clearCart();
       toast.success('Order placed successfully!');
       router.push('/order-confirmation');
     } catch (error) {
@@ -64,11 +92,6 @@ export default function CheckoutPage() {
       setIsProcessing(false);
     }
   };
-
-  if (cart.length === 0) {
-    router.push('/cart');
-    return null;
-  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -257,14 +280,14 @@ export default function CheckoutPage() {
                 <div key={item.id} className="flex gap-4">
                   <div className="w-20 h-20 bg-gray-100 rounded-md"></div>
                   <div className="flex-grow">
-                    <h3 className="font-semibold">{item.name}</h3>
+                    <h3 className="font-semibold">{item.product.name}</h3>
                     <p className="text-sm text-gray-500">
                       Size: {item.selectedSize}, Color: {item.selectedColor}
                     </p>
                     <div className="flex justify-between mt-1">
                       <p className="text-sm">Qty: {item.quantity}</p>
                       <p className="font-semibold">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        ${(item.product.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   </div>
