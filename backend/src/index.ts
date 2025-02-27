@@ -120,7 +120,9 @@ app.use((err: ErrorWithStatus, req: express.Request, res: express.Response, next
   });
 });
 
-const PORT = process.env.PORT || 10000;
+// Parse PORT as number
+const PORT = parseInt(process.env.PORT || '10000', 10);
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
