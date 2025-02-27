@@ -7,7 +7,7 @@
     }
   ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://your-backend-domain.onrender.com/api"
+    "NEXT_PUBLIC_API_URL": "https://fashion-website-backend.onrender.com/api"
   },
   "routes": [
     {
