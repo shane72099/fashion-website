@@ -7,12 +7,17 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-      },
+        pathname: '/**',
+      }
     ],
   },
   typescript: {
     ignoreBuildErrors: true,
   },
+  swcMinify: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  }
 };
 
 export default nextConfig; 

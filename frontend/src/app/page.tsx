@@ -1,132 +1,172 @@
-import Image from "next/image";
-import Link from "next/link";
-import { categories } from '@/data/categories';
-import { products } from '@/data/products';
+'use client';
 
-export default function HomePage() {
-  const featuredProducts = products.slice(0, 4); // Get first 4 products as featured
+import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { products } from '@/data/products';
+import { categories } from '@/data/categories';
+import { motion } from 'framer-motion';
+
+const Home = () => {
+  const [activeCategory, setActiveCategory] = useState('all');
 
   return (
-    <main>
-      {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center justify-center">
-        <Image
-          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80"
-          alt="Fashion Hero"
-          fill
-          className="object-cover brightness-75"
-          priority
-        />
-        <div className="relative text-center text-white z-10">
-          <h1 className="text-5xl font-bold mb-4">New Season Arrivals</h1>
-          <p className="text-xl mb-8">Discover the latest trends in fashion</p>
-          <Link
-            href="/category/new-arrivals"
-            className="bg-white text-black px-8 py-3 rounded-md hover:bg-gray-100 transition"
-          >
-            Shop Now
-          </Link>
+    <div className="min-h-screen">
+      {/* Hero Grid Section */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-0">
+        <div className="relative h-[70vh] md:h-screen">
+          <Image
+            src="https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc"
+            alt="Urban Fashion"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 bg-black/10">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl md:text-6xl font-light text-white mb-6 text-center"
+            >
+              New Arrivals
+            </motion.h1>
+            <Link
+              href="/category/new-arrivals"
+              className="text-white border border-white px-8 py-3 hover:bg-white hover:text-black transition duration-300"
+            >
+              Shop Now
+            </Link>
+          </div>
+        </div>
+        <div className="relative h-[70vh] md:h-screen">
+          <Image
+            src="https://images.unsplash.com/photo-1483985988355-763728e1935b"
+            alt="Bestsellers"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 bg-black/10">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl md:text-6xl font-light text-white mb-6 text-center"
+            >
+              Bestsellers
+            </motion.h1>
+            <Link
+              href="/category/bestsellers"
+              className="text-white border border-white px-8 py-3 hover:bg-white hover:text-black transition duration-300"
+            >
+              Shop Now
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section className="py-16 px-4 max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12">Shop by Category</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {categories.map((category) => (
+      {/* Categories Grid */}
+      <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px bg-gray-100">
+        {categories.map((category) => (
+          <Link
+            key={category.id}
+            href={`/category/${category.slug}`}
+            className="group relative aspect-[3/4] bg-white overflow-hidden"
+          >
+            <Image
+              src={category.image}
+              alt={category.name}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+            <div className="absolute bottom-0 left-0 right-0 p-6 text-center bg-gradient-to-t from-black/40 to-transparent">
+              <h3 className="text-white text-lg font-light">{category.name}</h3>
+            </div>
+          </Link>
+        ))}
+      </section>
+
+      {/* Featured Collection */}
+      <section className="py-20 px-6 md:px-12">
+        <h2 className="text-2xl font-light text-center mb-12">Featured Collection</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {products.slice(0, 4).map((product) => (
             <Link
-              key={category.id}
-              href={`/category/${category.slug}`}
-              className="group relative h-64 overflow-hidden rounded-lg"
+              key={product.id}
+              href={`/product/${product.id}`}
+              className="group"
             >
-              <Image
-                src={category.image}
-                alt={category.name}
-                fill
-                className="object-cover group-hover:scale-105 transition duration-300"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <h3 className="text-2xl font-semibold mb-2">{category.name}</h3>
-                  <p className="text-sm opacity-90">{category.description}</p>
-                </div>
+              <div className="relative aspect-[3/4] overflow-hidden mb-4">
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                {product.discount > 0 && (
+                  <div className="absolute top-4 right-4 bg-white px-3 py-1 text-xs">
+                    {product.discount}% Off
+                  </div>
+                )}
+              </div>
+              <h3 className="text-sm font-light mb-2">{product.name}</h3>
+              <div className="flex items-center gap-3">
+                <p className="text-sm">
+                  ${(product.price * (1 - product.discount / 100)).toFixed(2)}
+                </p>
+                {product.discount > 0 && (
+                  <p className="text-sm text-gray-500 line-through">
+                    ${product.price.toFixed(2)}
+                  </p>
+                )}
               </div>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* Featured Products Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Featured Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {featuredProducts.map((product) => (
-              <Link
-                key={product.id}
-                href={`/product/${product.id}`}
-                className="group"
-              >
-                <div className="relative h-64 mb-4 rounded-lg overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition duration-300"
-                  />
-                  {product.discount > 0 && (
-                    <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded">
-                      {product.discount}% OFF
-                    </div>
-                  )}
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
-                <div className="flex items-center justify-between">
-                  <p className="text-gray-700">
-                    ${product.price.toFixed(2)}
-                    {product.discount > 0 && (
-                      <span className="ml-2 text-sm text-gray-500 line-through">
-                        ${(product.price * (1 + product.discount / 100)).toFixed(2)}
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-          <div className="text-center mt-12">
-            <Link
-              href="/products"
-              className="inline-block bg-black text-white px-8 py-3 rounded-md hover:bg-gray-800 transition"
-            >
-              View All Products
-            </Link>
-          </div>
+      {/* Brand Story */}
+      <section className="py-20 px-6 md:px-12 bg-[#f8f8f8]">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-2xl font-light mb-6">Fewer, Better</h2>
+          <p className="text-gray-600 mb-8">
+            Your life simplified by a smarter, better wardrobe. Our collection is sustainably made and designed to last.
+          </p>
+          <Link
+            href="/about"
+            className="text-black border-b border-black pb-1 hover:opacity-70 transition duration-300"
+          >
+            Learn More
+          </Link>
         </div>
       </section>
 
-      {/* Newsletter Section */}
-      <section className="py-16 px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
+      {/* Newsletter */}
+      <section className="py-20 px-6 md:px-12">
+        <div className="max-w-xl mx-auto text-center">
+          <h2 className="text-2xl font-light mb-4">Join Us</h2>
           <p className="text-gray-600 mb-8">
-            Subscribe to our newsletter to receive updates, news, and exclusive offers
+            Sign up for exclusive updates, new arrivals & insider-only discounts
           </p>
-          <form className="flex gap-4 max-w-md mx-auto">
+          <form className="flex gap-4">
             <input
               type="email"
               placeholder="Enter your email"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+              className="flex-1 px-4 py-3 border border-gray-300 focus:outline-none focus:border-black"
             />
             <button
               type="submit"
-              className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition"
+              className="px-8 py-3 bg-black text-white hover:bg-gray-800 transition duration-300"
             >
               Subscribe
             </button>
           </form>
         </div>
       </section>
-    </main>
+    </div>
   );
-}
+};
+
+export default Home;

@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/hooks/useCart';
-import { useSearch } from '@/hooks/useSearch';
 import { categories } from '@/data/categories';
-import { FiShoppingCart, FiHeart, FiUser, FiMenu, FiX, FiSearch } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiShoppingBag, FiUser, FiMenu, FiX, FiSearch } from 'react-icons/fi';
 import SearchResults from './SearchResults';
 
 export default function Navbar() {
@@ -14,9 +14,9 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const pathname = usePathname();
   const { cart } = useCart();
-  const { searchProducts, searchResults, isSearching } = useSearch();
 
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
 
@@ -29,204 +29,226 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      searchProducts(searchQuery);
-    }
-  };
-
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    if (value.trim()) {
-      searchProducts(value);
-    }
-  };
-
-  const closeSearch = () => {
-    setIsSearchOpen(false);
-    setSearchQuery('');
-  };
-
   return (
-    <header
-      className={`fixed w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white shadow-md' : 'bg-white/80 backdrop-blur-md'
-      }`}
-    >
-      {/* Top Banner */}
-      <div className="bg-black text-white text-center py-2 text-sm">
-        Free shipping on orders over $50 | Get 10% off your first order
+    <>
+      {/* Announcement Bar */}
+      <div className="bg-[#f8f8f8] text-xs py-2 text-center">
+        Free shipping on orders over $200
       </div>
 
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between py-4">
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden"
-          >
-            {isMenuOpen ? (
-              <FiX className="h-6 w-6" />
-            ) : (
-              <FiMenu className="h-6 w-6" />
-            )}
-          </button>
-
-          {/* Logo */}
-          <Link href="/" className="text-2xl font-bold">
-            FASHION
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
-            <Link
-              href="/"
-              className={`hover:text-gray-600 ${
-                pathname === '/' ? 'font-semibold' : ''
-              }`}
-            >
-              Home
-            </Link>
-            {categories.map((category) => (
-              <Link
-                key={category.slug}
-                href={`/category/${category.slug}`}
-                className={`hover:text-gray-600 ${
-                  pathname === `/category/${category.slug}` ? 'font-semibold' : ''
-                }`}
-              >
-                {category.name}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Icons */}
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="hover:text-gray-600"
-            >
-              <FiSearch className="h-6 w-6" />
-            </button>
-            <Link href="/wishlist" className="hover:text-gray-600">
-              <FiHeart className="h-6 w-6" />
-            </Link>
-            <Link href="/cart" className="hover:text-gray-600 relative">
-              <FiShoppingCart className="h-6 w-6" />
-              {cartItemsCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemsCount}
-                </span>
-              )}
-            </Link>
-            <Link href="/account" className="hover:text-gray-600">
-              <FiUser className="h-6 w-6" />
-            </Link>
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        <div
-          className={`${
-            isSearchOpen ? 'max-h-[80vh]' : 'max-h-0'
-          } overflow-hidden transition-all duration-300 relative`}
-        >
-          <form onSubmit={handleSearch} className="py-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search for products..."
-                value={searchQuery}
-                onChange={handleSearchInputChange}
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-              />
-              <button
-                type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2"
-              >
-                <FiSearch className="h-5 w-5 text-gray-400" />
-              </button>
-            </div>
-          </form>
-
-          {isSearchOpen && searchQuery && (
-            <SearchResults
-              results={searchResults}
-              isSearching={isSearching}
-              onClose={closeSearch}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      <div
-        className={`lg:hidden fixed inset-0 bg-white z-50 transition-transform duration-300 ${
-          isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      <header
+        className={`fixed w-full z-50 transition-all duration-300 ${
+          isScrolled ? 'bg-white shadow-sm' : 'bg-white'
         }`}
       >
-        <div className="p-4">
-          <button
-            onClick={() => setIsMenuOpen(false)}
-            className="absolute top-4 right-4"
-          >
-            <FiX className="h-6 w-6" />
-          </button>
-
-          <nav className="mt-8 space-y-4">
-            <Link
-              href="/"
-              className={`block text-lg ${
-                pathname === '/' ? 'font-semibold' : ''
-              }`}
-              onClick={() => setIsMenuOpen(false)}
+        <div className="max-w-screen-2xl mx-auto">
+          <div className="flex items-center justify-between px-4 md:px-8 h-16">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="lg:hidden p-2"
             >
-              Home
+              {isMenuOpen ? (
+                <FiX className="h-5 w-5" />
+              ) : (
+                <FiMenu className="h-5 w-5" />
+              )}
+            </button>
+
+            {/* Logo */}
+            <Link href="/" className="text-xl font-light tracking-widest">
+              FASHION
             </Link>
-            {categories.map((category) => (
-              <Link
-                key={category.slug}
-                href={`/category/${category.slug}`}
-                className={`block text-lg ${
-                  pathname === `/category/${category.slug}` ? 'font-semibold' : ''
-                }`}
-                onClick={() => setIsMenuOpen(false)}
+
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center space-x-8">
+              {categories.map((category) => (
+                <div
+                  key={category.slug}
+                  className="relative group"
+                  onMouseEnter={() => setActiveCategory(category.slug)}
+                  onMouseLeave={() => setActiveCategory(null)}
+                >
+                  <Link
+                    href={`/category/${category.slug}`}
+                    className={`text-sm font-light hover:opacity-70 transition-opacity ${
+                      pathname === `/category/${category.slug}` ? 'text-black' : 'text-gray-600'
+                    }`}
+                  >
+                    {category.name}
+                  </Link>
+                  {activeCategory === category.slug && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute top-full left-0 w-64 bg-white shadow-lg p-6"
+                    >
+                      <div className="space-y-4">
+                        <Link
+                          href={`/category/${category.slug}/new-arrivals`}
+                          className="block text-sm font-light text-gray-600 hover:text-black transition-colors"
+                        >
+                          New Arrivals
+                        </Link>
+                        <Link
+                          href={`/category/${category.slug}/bestsellers`}
+                          className="block text-sm font-light text-gray-600 hover:text-black transition-colors"
+                        >
+                          Bestsellers
+                        </Link>
+                        <Link
+                          href={`/category/${category.slug}/all`}
+                          className="block text-sm font-light text-gray-600 hover:text-black transition-colors"
+                        >
+                          Shop All
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              ))}
+            </nav>
+
+            {/* Icons */}
+            <div className="flex items-center space-x-6">
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="p-2"
               >
-                {category.name}
+                <FiSearch className="h-5 w-5" />
+              </button>
+              <Link href="/account" className="p-2 hidden md:block">
+                <FiUser className="h-5 w-5" />
               </Link>
-            ))}
-          </nav>
-
-          <div className="mt-8 space-y-4">
-            <Link
-              href="/account"
-              className="flex items-center space-x-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <FiUser className="h-5 w-5" />
-              <span>Account</span>
-            </Link>
-            <Link
-              href="/wishlist"
-              className="flex items-center space-x-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <FiHeart className="h-5 w-5" />
-              <span>Wishlist</span>
-            </Link>
-            <Link
-              href="/cart"
-              className="flex items-center space-x-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <FiShoppingCart className="h-5 w-5" />
-              <span>Cart ({cartItemsCount})</span>
-            </Link>
+              <Link href="/cart" className="p-2 relative">
+                <FiShoppingBag className="h-5 w-5" />
+                {cartItemsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-black text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+                    {cartItemsCount}
+                  </span>
+                )}
+              </Link>
+            </div>
           </div>
+
+          {/* Search Bar */}
+          <AnimatePresence>
+            {isSearchOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="border-t overflow-hidden"
+              >
+                <div className="p-4">
+                  <div className="relative max-w-2xl mx-auto">
+                    <input
+                      type="text"
+                      placeholder="Search our store"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full px-4 py-3 bg-transparent border-b border-gray-200 focus:outline-none focus:border-black text-sm"
+                    />
+                    <button className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      <FiSearch className="h-5 w-5 text-gray-400" />
+                    </button>
+                  </div>
+                </div>
+
+                {searchQuery && (
+                  <SearchResults
+                    query={searchQuery}
+                    onClose={() => {
+                      setSearchQuery('');
+                      setIsSearchOpen(false);
+                    }}
+                  />
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
-    </header>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'tween', duration: 0.3 }}
+              className="fixed inset-0 bg-white z-50 lg:hidden"
+            >
+              <div className="p-4">
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="absolute top-4 right-4 p-2"
+                >
+                  <FiX className="h-6 w-6" />
+                </button>
+
+                <nav className="mt-16 space-y-6">
+                  {categories.map((category) => (
+                    <div key={category.slug} className="space-y-4">
+                      <Link
+                        href={`/category/${category.slug}`}
+                        className="block text-lg font-light"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {category.name}
+                      </Link>
+                      <div className="pl-4 space-y-3">
+                        <Link
+                          href={`/category/${category.slug}/new-arrivals`}
+                          className="block text-sm text-gray-600"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          New Arrivals
+                        </Link>
+                        <Link
+                          href={`/category/${category.slug}/bestsellers`}
+                          className="block text-sm text-gray-600"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Bestsellers
+                        </Link>
+                        <Link
+                          href={`/category/${category.slug}/all`}
+                          className="block text-sm text-gray-600"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Shop All
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </nav>
+
+                <div className="mt-8 space-y-6">
+                  <Link
+                    href="/account"
+                    className="flex items-center space-x-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FiUser className="h-5 w-5" />
+                    <span className="font-light">Account</span>
+                  </Link>
+                  <Link
+                    href="/cart"
+                    className="flex items-center space-x-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FiShoppingBag className="h-5 w-5" />
+                    <span className="font-light">Cart ({cartItemsCount})</span>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
+    </>
   );
 } 
